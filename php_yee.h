@@ -52,6 +52,10 @@ extern zend_module_entry yee_module_entry;
 #define YEE_ME(classname, name, arg_info, flags)	ZEND_FENTRY(name, YEE_MN(classname##_##name), arg_info, flags)
 #define YEE_ABSTRACT_ME ZEND_ABSTRACT_ME
 
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_empty, 0, 0, 0)
+ZEND_END_ARG_INFO()
+
 /* 
   	Declare any global variables you may need between the BEGIN
 	and END macros here:     

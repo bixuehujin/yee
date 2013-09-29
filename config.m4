@@ -49,6 +49,7 @@ if test "$PHP_YEE" != "no"; then
   
   sources="yee.c              \
   	zend/zend_class.c         \
+  	yii.c                     \
   	base/interfaces.c         \
   	base/exceptions.c         \
     base/object.c             \

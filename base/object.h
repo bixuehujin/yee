@@ -20,7 +20,6 @@
 
 #ifndef YEE_BASE_OBJECT_H_
 #define YEE_BASE_OBJECT_H_
-
 #include "php_yee.h"
 
 zend_class_entry *yee_ce_Object;
@@ -30,13 +29,15 @@ typedef struct _yee_object {
 }yee_object_t;
 
 
-void yee_object___construct(yee_object_t *object, zval *config);
-void yee_object_init(yee_object_t *object);
+void yee_object___construct(zval *self, zval *config);
+void yee_object_init(zval *self);
 
-zval * yee_object___get(yee_object_t *object, const char *name, const int name_len);
-void yee_object___set(yee_object_t *object, const char *name, const int name_len, zval *value);
-zend_bool yee_object___isset(yee_object_t *object, const char *name, const int name_len);
-void yee_object___unset(yee_object_t *object, const char *name, const int name_len);
+zval * yee_object___get(zval *self, const char *name, const int name_len);
+void yee_object___set(zval *self, const char *name, const int name_len, zval *value);
+zend_bool yee_object___isset(zval *self, const char *name, const int name_len);
+void yee_object___unset(zval *self, const char *name, const int name_len);
+
+void yee_object_configure(zval *object, zval *properties);
 
 void yee_object_register();
 
