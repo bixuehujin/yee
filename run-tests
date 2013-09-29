@@ -1,0 +1,4 @@
+#! /bin/bash
+export NO_INTERACTION=true
+chmod +x ./run-tests.php
+./run-tests.php -p `which phpd` -d extension=./modules/yee.so $*
