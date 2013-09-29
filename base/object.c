@@ -74,18 +74,20 @@ void yee_object___set(zval *self, const char *name, const int name_len, zval *va
 
 zval * yee_object___get(zval *self, const char *name, const int name_len) {
 	zend_object * object = (zend_object *)zend_object_store_get_object(self);
-	smart_str method = {0};
-	smart_str_appendl(&method, "get", 3);
-	smart_str_appendl(&method, name, name_len);
-	smart_str_0(&method);
+	smart_str getter = {0};
+	smart_str_appendl(&getter, "get", 3);
+	smart_str_appendl(&getter, name, name_len);
+	smart_str_0(&getter);
+	zend_str_tolower(getter.c, getter.len);
+	zval *ret = NULL;
 	
-	if (zend_class_method_exists(object->ce, method.c, method.len)) {
-		
-		return NULL;
+	if (zend_class_method_exists(object->ce, getter.c, getter.len)) {
+		zend_call_method(&self, object->ce, NULL, getter.c, getter.len, &ret, 0, NULL, NULL);
 	}else {
 		zend_throw_exception_ex(yee_ce_UnknownPropertyException, 0, "Getting unknown property: %s::%s", object->ce->name, name);
-		return NULL;
 	}
+	smart_str_free(&getter);
+	return ret;
 }
 
 void yee_object_configure(zval *object, zval *properties) {
@@ -131,7 +133,16 @@ YEE_METHOD(Object, className) {
 }
 
 YEE_METHOD(Object, __get) {
+	char *name;
+	uint name_len;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		return;
+	}
+	zval *ret = yee_object___get(getThis(), name, name_len);
+	if (ret) {
+		RETURN_ZVAL(ret, 0, _zval_dtor);
+	}
 }
 
 YEE_METHOD(Object, __set) {
@@ -183,16 +194,11 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_class___construct, 0, 0, 1)
 ZEND_END_ARG_INFO()
 
 
-ZEND_BEGIN_ARG_INFO_EX(arginfo_class___set, 0, 0, 2)
-	ZEND_ARG_INFO(0, name)
-	ZEND_ARG_INFO(0, value)
-ZEND_END_ARG_INFO()
-
-
 static const zend_function_entry class_methods[] = {
 	YEE_ME(Object, __construct,    arginfo_class___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
 	YEE_ME(Object, init,           arginfo_empty,             ZEND_ACC_PUBLIC)
-	YEE_ME(Object, __set,          arginfo_class___set,       ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __set,          arginfo_magic_set,         ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __get,          arginfo_magic_get,         ZEND_ACC_PUBLIC)
 	YEE_ME(Object, toArray,        arginfo_empty,             ZEND_ACC_PUBLIC)
 	PHP_FE_END
 };
