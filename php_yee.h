@@ -73,6 +73,10 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_magic_unset, 0, 0, 1)
 	ZEND_ARG_INFO(0, name)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_magic_call, 0, 0, 2)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, params)
+ZEND_END_ARG_INFO()
 
 /* 
   	Declare any global variables you may need between the BEGIN
