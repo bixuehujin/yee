@@ -29,10 +29,6 @@ void yee_object___construct(zval *self, zval *config) {
 	}
 }
 
-char * yee_object_class_name(zval *self, int *len) {
-	return NULL;
-}
-
 
 void yee_object___set(zval *self, const char *name, const int name_len, zval *value) {
 	zend_object * object = (zend_object *)zend_object_store_get_object(self);
@@ -87,6 +83,60 @@ zval * yee_object___get(zval *self, const char *name, const int name_len) {
 	return ret;
 }
 
+zend_bool yee_object___isset(zval *self, const char *name, const int name_len) {
+	zend_object * object = (zend_object *)zend_object_store_get_object(self);
+	smart_str getter = {0};
+	smart_str_appendl(&getter, "get", 3);
+	smart_str_appendl(&getter, name, name_len);
+	smart_str_0(&getter);
+	zend_str_tolower(getter.c, getter.len);
+	zval *value = NULL;
+	zend_bool ret = 0;
+	
+	if (zend_class_method_exists(object->ce, getter.c, getter.len)) {
+		zend_call_method(&self, object->ce, NULL, getter.c, getter.len, &value, 0, NULL, NULL);
+		ret = Z_TYPE_P(value) != IS_NULL;
+	}
+	smart_str_free(&getter);
+	return ret;
+}
+
+void yee_object___unset(zval *self, const char *name, const int name_len) {
+	zend_object * object = (zend_object *)zend_object_store_get_object(self);
+	int result = 0;
+	
+	smart_str setter = {0};
+	smart_str_appendl(&setter, "set", 3);
+	smart_str_appendl(&setter, name, name_len);
+	smart_str_0(&setter);
+	
+	smart_str getter = {0};
+	smart_str_appendl(&getter, "get", 3);
+	smart_str_appendl(&getter, name, name_len);
+	smart_str_0(&getter);
+	
+	zend_str_tolower(setter.c, setter.len);
+	zend_str_tolower(getter.c, getter.len);
+	
+	if (zend_class_method_exists(object->ce, setter.c, setter.len)) {
+		zval * value;
+		MAKE_STD_ZVAL(value);
+		Z_TYPE_P(value) = IS_NULL;
+		zend_call_method(&self, object->ce, NULL, setter.c, setter.len, NULL, 1, value, NULL);
+		
+	}else if (zend_class_method_exists(object->ce, getter.c, getter.len)) {
+		zend_throw_exception_ex(yee_ce_InvalidCallException, 0, "Unsetting read-only property: %s::%s", object->ce->name, name);
+	}
+	/*
+	if (!result) {
+		zval_dtor(value);
+		efree(value);
+	}
+	*/
+	smart_str_free(&setter);
+	smart_str_free(&getter);
+}
+
 void yee_object_configure(zval *object, zval *properties) {
 	if (Z_TYPE_P(object) != IS_OBJECT) {
 		zend_error(E_ERROR, "Only object can be configured, %s given", zend_zval_type_name(object));
@@ -108,6 +158,7 @@ void yee_object_configure(zval *object, zval *properties) {
 		zend_hash_move_forward(ht);
 	}
 }
+
 
 YEE_METHOD(Object, __construct) {
 	zval *config = NULL;
@@ -160,11 +211,27 @@ YEE_METHOD(Object, __set) {
 }
 
 YEE_METHOD(Object, __isset) {
+	char *name;
+	int name_len;
+	zend_bool isset;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		return;
+	}
+	
+	isset = yee_object___isset(getThis(), name, name_len);
+	RETURN_BOOL(isset);
 }
 
 YEE_METHOD(Object, __unset) {
+	char *name;
+	int name_len;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		return;
+	}
+	
+	yee_object___unset(getThis(), name, name_len);
 }
 
 YEE_METHOD(Object, __call) {
@@ -178,23 +245,69 @@ YEE_METHOD(Object, __call) {
 }
 
 YEE_METHOD(Object, hasProperty) {
+	char *name;
+	char name_len;
+	zend_bool check_vars = 1;
+	zend_bool ret;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &name, &name_len, &check_vars) == FAILURE) {
+		return;
+	}
+	
+	ret = zend_class_method_exists_ex(Z_OBJCE_P(getThis()), "get%s", name) ||
+			(check_vars && zend_property_exists(getThis(), name, name_len)) ||
+			zend_class_method_exists_ex(Z_OBJCE_P(getThis()), "set%s", name);
+	RETURN_BOOL(ret);
 }
 
 YEE_METHOD(Object, canGetProperty) {
+	char *name;
+	char name_len;
+	zend_bool check_vars = 1;
+	zend_bool ret;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &name, &name_len, &check_vars) == FAILURE) {
+		return;
+	}
+	
+	ret = zend_class_method_exists_ex(Z_OBJCE_P(getThis()), "get%s", name) ||
+			(check_vars && zend_property_exists(getThis(), name, name_len));
+	RETURN_BOOL(ret);
 }
 
 YEE_METHOD(Object, canSetProperty) {
+	char *name;
+	char name_len;
+	zend_bool check_vars = 1;
+	zend_bool ret;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s|b", &name, &name_len, &check_vars) == FAILURE) {
+		return;
+	}
+	
+	ret = zend_class_method_exists_ex(Z_OBJCE_P(getThis()), "set%s", name) ||
+			(check_vars && zend_property_exists(getThis(), name, name_len));
+	RETURN_BOOL(ret);
 }
 
 YEE_METHOD(Object, hasMethod) {
+	char *name;
+	int name_len;
+	zend_bool exist;
 	
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &name, &name_len) == FAILURE) {
+		return;
+	}
+	exist = zend_class_method_exists(Z_OBJCE_P(getThis()), name, name_len);
+	RETVAL_BOOL(exist);
 }
 
 YEE_METHOD(Object, toArray) {
+	if (zend_parse_parameters_none() == FAILURE) {
+		return;
+	}
 	
+	zend_object_get_vars(getThis(), return_value);
 }
 
 
@@ -202,17 +315,40 @@ ZEND_BEGIN_ARG_INFO_EX(arginfo_class___construct, 0, 0, 1)
 	ZEND_ARG_INFO(0, config)
 ZEND_END_ARG_INFO()
 
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_hasProperty, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, checkVars)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_canGetProperty, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, checkVars)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_canSetProperty, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
+	ZEND_ARG_INFO(0, checkVars)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO_EX(arginfo_class_hasMethod, 0, 0, 1)
+	ZEND_ARG_INFO(0, name)
+ZEND_END_ARG_INFO()
+
 
 static const zend_function_entry class_methods[] = {
-	YEE_ME(Object, __construct,    arginfo_class___construct, ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
-	YEE_ME(Object, init,           arginfo_empty,             ZEND_ACC_PUBLIC)
-	YEE_ME(Object, __set,          arginfo_magic_set,         ZEND_ACC_PUBLIC)
-	YEE_ME(Object, __get,          arginfo_magic_get,         ZEND_ACC_PUBLIC)
-	YEE_ME(Object, __isset,        arginfo_magic_isset,       ZEND_ACC_PUBLIC)
-	YEE_ME(Object, __unset,        arginfo_magic_unset,       ZEND_ACC_PUBLIC)
-	YEE_ME(Object, __call,         arginfo_magic_call,        ZEND_ACC_PUBLIC)
-	YEE_ME(Object, toArray,        arginfo_empty,             ZEND_ACC_PUBLIC)
-	YEE_ME(Object, className,      arginfo_empty,             ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
+	YEE_ME(Object, __construct,    arginfo_class___construct,    ZEND_ACC_PUBLIC | ZEND_ACC_CTOR)
+	YEE_ME(Object, init,           arginfo_empty,                ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __set,          arginfo_magic_set,            ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __get,          arginfo_magic_get,            ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __isset,        arginfo_magic_isset,          ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __unset,        arginfo_magic_unset,          ZEND_ACC_PUBLIC)
+	YEE_ME(Object, __call,         arginfo_magic_call,           ZEND_ACC_PUBLIC)
+	YEE_ME(Object, toArray,        arginfo_empty,                ZEND_ACC_PUBLIC)
+	YEE_ME(Object, hasProperty,    arginfo_class_hasProperty,    ZEND_ACC_PUBLIC)
+	YEE_ME(Object, hasMethod,      arginfo_class_hasMethod,      ZEND_ACC_PUBLIC)
+	YEE_ME(Object, canSetProperty, arginfo_class_canSetProperty, ZEND_ACC_PUBLIC)
+	YEE_ME(Object, canGetProperty, arginfo_class_canGetProperty, ZEND_ACC_PUBLIC)
+	YEE_ME(Object, className,      arginfo_empty,                ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
 	PHP_FE_END
 };
 
