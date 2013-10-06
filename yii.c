@@ -83,7 +83,7 @@ char * yee_base_yii_get_alias(zval *target, const char *alias, int alias_len, ze
 }
 
 /* copy and modified from ext/standard/array.c */
-static reverse_key_compare(const void *a, const void *b TSRMLS_DC) {
+static int reverse_key_compare(const void *a, const void *b TSRMLS_DC) {
 	Bucket *f;
 	Bucket *s;
 	zval result;
@@ -102,6 +102,10 @@ static reverse_key_compare(const void *a, const void *b TSRMLS_DC) {
 		Z_STRLEN(first) = f->nKeyLength - 1;
 	}
 
+	if (compare_function(&result, &first, &second TSRMLS_CC) == FAILURE) {
+		return 0;
+	}
+	
 	if (s->nKeyLength == 0) {
 		Z_TYPE(second) = IS_LONG;
 		Z_LVAL(second) = s->h;
@@ -113,9 +117,9 @@ static reverse_key_compare(const void *a, const void *b TSRMLS_DC) {
 
 	if (Z_TYPE(result) == IS_DOUBLE) {
 		if (Z_DVAL(result) < 0) {
-			return -1;
-		} else if (Z_DVAL(result) > 0) {
 			return 1;
+		} else if (Z_DVAL(result) > 0) {
+			return -1;
 		} else {
 			return 0;
 		}
@@ -124,9 +128,9 @@ static reverse_key_compare(const void *a, const void *b TSRMLS_DC) {
 	convert_to_long(&result);
 
 	if (Z_LVAL(result) < 0) {
-		return -1;
-	} else if (Z_LVAL(result) > 0) {
 		return 1;
+	} else if (Z_LVAL(result) > 0) {
+		return -1;
 	}
 
 	return 0;
