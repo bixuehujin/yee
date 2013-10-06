@@ -1,9 +1,22 @@
 /*
- * yii.h
- *
- *  Created on: Sep 30, 2013
- *      Author: hujin
- */
+  +----------------------------------------------------------------------+
+  | PHP Version 5                                                        |
+  +----------------------------------------------------------------------+
+  | Copyright (c) 1997-2013 The PHP Group                                |
+  +----------------------------------------------------------------------+
+  | This source file is subject to version 3.01 of the PHP license,      |
+  | that is bundled with this package in the file LICENSE, and is        |
+  | available through the world-wide-web at the following url:           |
+  | http://www.php.net/license/3_01.txt                                  |
+  | If you did not receive a copy of the PHP license and are unable to   |
+  | obtain it through the world-wide-web, please send a note to          |
+  | license@php.net so we can mail you a copy immediately.               |
+  +----------------------------------------------------------------------+
+  | Author:  Jin Hu <bixuehujin@gmail.com>                               |
+  +----------------------------------------------------------------------+
+*/
+
+/* $Id$ */
 
 #ifndef YEE_YII_H_
 #define YEE_YII_H_
@@ -13,16 +26,7 @@ zend_class_entry *yee_ce_BaseYii;
 zend_class_entry *yee_ce_Yii;
 
 
-YEE_METHOD(BaseYii, configure);
-
-ZEND_BEGIN_ARG_INFO_EX(arginfo_BaseYii_configure, 0, 0, 2)
-	ZEND_ARG_INFO(0, object)
-	ZEND_ARG_INFO(0, properties)
-ZEND_END_ARG_INFO()
-
-static const zend_function_entry methods_BaseYii[] = {
-	YEE_ME(BaseYii, configure, arginfo_BaseYii_configure, ZEND_ACC_PUBLIC | ZEND_ACC_STATIC)
-};
+void yee_base_yii_do_register_ce();
 
 
 #endif /* YEE_YII_H_ */

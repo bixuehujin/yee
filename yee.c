@@ -77,7 +77,6 @@ static void php_yee_init_globals(zend_yee_globals *yee_globals)
 }
 */
 
-
 /* }}} */
 
 /* {{{ PHP_MINIT_FUNCTION
@@ -91,13 +90,7 @@ PHP_MINIT_FUNCTION(yee)
 	yee_base_register_exceptions();
 	yee_object_register_class();
 	
-	zend_class_entry ce_BaseYii;
-	INIT_CLASS_ENTRY(ce_BaseYii, "yii\\BaseYii", methods_BaseYii);
-	yee_ce_BaseYii = zend_register_internal_class(&ce_BaseYii);
-	
-	zend_class_entry ce_Yii;
-	INIT_CLASS_ENTRY(ce_Yii, "Yii", NULL);
-	yee_ce_Yii = zend_register_internal_class(&ce_Yii);
+	yee_base_yii_do_register_ce();
 	
 	
 	return SUCCESS;
@@ -120,6 +113,7 @@ PHP_MSHUTDOWN_FUNCTION(yee)
  */
 PHP_RINIT_FUNCTION(yee)
 {
+	yee_base_yii_do_initialize_static_properties();
 	return SUCCESS;
 }
 /* }}} */
