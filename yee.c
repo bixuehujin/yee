@@ -86,9 +86,11 @@ PHP_MINIT_FUNCTION(yee)
 	/* If you have INI entries, uncomment these lines 
 	REGISTER_INI_ENTRIES();
 	*/
-	yee_base_register_interfaces();
-	yee_base_register_exceptions();
-	yee_object_register_class();
+	yee_base_interfaces_do_register_ce();
+	yee_base_exceptions_do_register_ce();
+	yee_object_do_register_ce();
+	yee_behavior_do_register_ce();
+	yee_component_do_register_ce();
 	
 	yee_base_yii_do_register_ce();
 	

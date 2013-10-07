@@ -25,6 +25,6 @@
 
 zend_class_entry *yee_ce_Arrayable;
 
-void yee_base_register_interfaces();
+void yee_base_interfaces_do_register_ce();
 
 #endif /* YEE_BASE_INTERFACES_H_ */

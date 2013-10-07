@@ -43,6 +43,6 @@ zend_class_entry *yee_ce_UserException;
 zval * yee_exception_to_array(zval *self);
 zval * yee_exception_to_array_recursive(zval *self, zval *exception);
 
-void yee_base_register_exceptions();
+void yee_base_exceptions_do_register_ce();
 
 #endif /* YEE_BASE_EXCEPTIONS_H_ */

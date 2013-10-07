@@ -352,7 +352,7 @@ static const zend_function_entry class_methods[] = {
 	PHP_FE_END
 };
 
-void yee_object_register_class() {
+void yee_object_do_register_ce() {
 	zend_class_entry ce;
 	INIT_CLASS_ENTRY(ce, "yii\\base\\Object", class_methods);
 	yee_ce_Object = zend_register_internal_class(&ce TSRMLS_CC);

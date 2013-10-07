@@ -207,7 +207,7 @@ static const zend_function_entry unknown_property_exception_methods[] = {
 };
 
 
-void yee_base_register_exceptions() {
+void yee_base_exceptions_do_register_ce() {
 	zend_class_entry ce_exception;
 	INIT_CLASS_ENTRY(ce_exception, "yii\\base\\Exception", exception_methods);
 	yee_ce_Exception = zend_register_internal_class_ex(&ce_exception, zend_exception_get_default(TSRMLS_CC), "Exception");

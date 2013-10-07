@@ -29,7 +29,7 @@ static const zend_function_entry iface_arrayable_methods[] = {
 	PHP_FE_END	
 };
 
-void yee_base_register_interfaces() {
+void yee_base_interfaces_do_register_ce() {
 	zend_class_entry ce_arrayble;
 	INIT_CLASS_ENTRY(ce_arrayble, "yii\\base\\Arrayable", iface_arrayable_methods);
 	yee_ce_Arrayable = zend_register_internal_interface(&ce_arrayble TSRMLS_CC);
