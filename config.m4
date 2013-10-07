@@ -53,6 +53,7 @@ if test "$PHP_YEE" != "no"; then
   	base/interfaces.c         \
   	base/exceptions.c         \
     base/object.c             \
+    base/behavior.c           \
     base/component.c          "
   
   PHP_NEW_EXTENSION(yee, $sources, $ext_shared)
